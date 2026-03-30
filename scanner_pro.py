@@ -98,25 +98,16 @@ class ScannerGUI(tk.Tk):
         style.configure("Cyber.Horizontal.TProgressbar", thickness=15, troughcolor=BG_PANEL, background=ACCENT, bordercolor=BG_PANEL)
 
     def _build_ui(self):
-        # Header
         header = ttk.Label(self, text="NETWORK PORT SCANNER PRO", style="Header.TLabel")
         header.pack(pady=20)
-
-        # Main Layout
         container = ttk.Frame(self)
         container.pack(fill="both", expand=True, padx=30, pady=10)
-
-        # Settings Panel
         settings_frm = ttk.Frame(container, style="Panel.TFrame")
         settings_frm.pack(fill="x", pady=10)
-        
-        # Target
         ttk.Label(settings_frm, text="Target Host:", style="Panel.TLabel").grid(row=0, column=0, padx=15, pady=15, sticky="w")
         self.ent_target = tk.Entry(settings_frm, bg=BG_MAIN, fg=TEXT_PRIMARY, insertbackground=TEXT_PRIMARY, border=0, font=("Consolas", 12), width=30)
         self.ent_target.grid(row=0, column=1, padx=5, pady=15)
         self.ent_target.insert(0, "127.0.0.1")
-
-        # Range
         ttk.Label(settings_frm, text="Port Range:", style="Panel.TLabel").grid(row=0, column=2, padx=15, pady=15, sticky="w")
         self.ent_start = tk.Entry(settings_frm, bg=BG_MAIN, fg=TEXT_PRIMARY, insertbackground=TEXT_PRIMARY, border=0, font=("Consolas", 12), width=8)
         self.ent_start.grid(row=0, column=3, padx=5, pady=15)
@@ -125,39 +116,30 @@ class ScannerGUI(tk.Tk):
         self.ent_end = tk.Entry(settings_frm, bg=BG_MAIN, fg=TEXT_PRIMARY, insertbackground=TEXT_PRIMARY, border=0, font=("Consolas", 12), width=8)
         self.ent_end.grid(row=0, column=5, padx=5, pady=15)
         self.ent_end.insert(0, "1024")
-
-        # Control Buttons
         btn_frm = ttk.Frame(container)
         btn_frm.pack(fill="x", pady=10)
         self.btn_start = ttk.Button(btn_frm, text="INITIATE SCAN", style="Accent.TButton", command=self.start_scan)
         self.btn_start.pack(side="left", padx=5)
         self.btn_stop = ttk.Button(btn_frm, text="STOP SCAN", style="Stop.TButton", state="disabled", command=self.stop_scan)
         self.btn_stop.pack(side="left", padx=5)
-
-        # Status & Progress
         status_frm = ttk.Frame(container)
         status_frm.pack(fill="x", pady=5)
         self.var_status = tk.StringVar(value="READY")
         ttk.Label(status_frm, textvariable=self.var_status, font=("Segoe UI Bold", 9)).pack(side="left")
         self.var_timer = tk.StringVar(value="0.00s")
         ttk.Label(status_frm, textvariable=self.var_timer, font=("Consolas", 10), foreground=ACCENT).pack(side="right")
-        
         self.progress = ttk.Progressbar(container, style="Cyber.Horizontal.TProgressbar", mode="determinate")
         self.progress.pack(fill="x", pady=10)
-
-        # Results Console
         console_frm = ttk.Frame(container, style="Panel.TFrame")
         console_frm.pack(fill="both", expand=True, pady=10)
         self.txt_results = tk.Text(console_frm, bg="#020617", fg=SUCCESS, font=("Consolas", 11), border=0, padx=15, pady=15)
         self.txt_results.pack(fill="both", expand=True, side="left")
-        
         scroll = ttk.Scrollbar(console_frm, command=self.txt_results.yview)
         scroll.pack(side="right", fill="y")
         self.txt_results.config(yscrollcommand=scroll.set)
 
     def append_log(self, msg, color=None):
-        self.txt_results.insert(tk.END, msg + "
-")
+        self.txt_results.insert(tk.END, msg + chr(10))
         self.txt_results.see(tk.END)
 
     def start_scan(self):
@@ -168,17 +150,14 @@ class ScannerGUI(tk.Tk):
         except:
             messagebox.showerror("Error", "Invalid port numbers")
             return
-
         self.txt_results.delete("1.0", tk.END)
         self.append_log(f"[*] Initializing scan on {target}...")
         self.append_log(f"[*] Range: {start_p} to {end_p}")
-        
         self.scanner = PortScanner(target, start_p, end_p)
         self.btn_start.config(state="disabled")
         self.btn_stop.config(state="normal")
         self.start_time = time.time()
         self.update_timer()
-        
         threading.Thread(target=self.scanner.run, daemon=True).start()
         self.after(50, self.poll_results)
 
@@ -202,8 +181,7 @@ class ScannerGUI(tk.Tk):
                     self.progress.config(maximum=b, value=a)
                     self.var_status.set(f"SCANNING: {a}/{b}")
                 elif msg == 'done':
-                    self.append_log(f"
-[!] SCAN COMPLETE. {len(self.scanner.open_ports)} open ports found.")
+                    self.append_log(chr(10) + f"[!] SCAN COMPLETE. {len(self.scanner.open_ports)} open ports found.")
                     self.btn_start.config(state="normal")
                     self.btn_stop.config(state="disabled")
                     self.start_time = None
